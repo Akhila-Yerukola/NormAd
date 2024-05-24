@@ -8,7 +8,7 @@ NormAd is a benchmark containing 2,633 stories describing everyday scenarios fro
 ![Figure providing a snapshot of the dataset](assets/overview_figure.png)
 
 ## Dataset Construction
-We generate stories instantiating norms the [Cultural Atlas](https://culturalatlas.sbs.com.au/), followed by automated and manual validation steps. 
+We generate stories by instantiating norms from the [Cultural Atlas](https://culturalatlas.sbs.com.au/), followed by both automated and manual validation steps.
 
 ![Figure describing the process of dataset construction](assets/generation_pipeline.jpg)
 
