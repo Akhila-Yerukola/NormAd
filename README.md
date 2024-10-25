@@ -17,7 +17,15 @@ NormAd-Eti is a benchmark that instantiates our framework. It contains 2,633 soc
 ![Figure providing a snapshot of the dataset](assets/overview_figure.png)
 
 ## Dataset Construction
-Our NormAd-Eti construction pipeline consists of 4 parts: a) Generation: We source social etiquette-related social norms from [Cultural Atlas](https://culturalatlas.sbs.com.au/) and systematically transform them into grounded social situation description, ROT, and VALUE b) Filtration: We perform three rounds of automatic filtering and sanity checks to eliminate inconsistencies c) Validation: We conduct extensive human validation of the constructed dataset d) Human Performance: We conduct a small-scale assessment of human performance.
+Our NormAd-Eti construction pipeline consists of 4 parts: 
+
+&nbsp;a) Generation: We source social etiquette-related social norms from [Cultural Atlas](https://culturalatlas.sbs.com.au/) and systematically transform them into grounded social situation description, ROT, and VALUE 
+
+&nbsp;b) Filtration: We perform three rounds of automatic filtering and sanity checks to eliminate inconsistencies 
+
+&nbsp;c) Validation: We conduct extensive human validation of the constructed dataset 
+
+&nbsp;d) Human Performance: We conduct a small-scale assessment of human performance.
 
 ![Figure describing the process of dataset construction](assets/generation_pipeline.png)
 
