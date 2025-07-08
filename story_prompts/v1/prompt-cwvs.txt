@@ -1,0 +1,69 @@
+In this situation, we present a country, followed by its cultural background over a particular axis 
+Cultural backgrounds can be descriptions of the country's values or notions over the following axes: 
+Core-concepts, 
+Family, 
+Religion, 
+Etiquette, 
+Business Culture, 
+Communication, 
+Do's and Don'ts in the country
+
+This is followed by a question on the world-value survey along the same axis. 
+
+Given the following, generate a human value associated with the data, and a scenario capturing its application. 
+You may relate the scenario to the question.
+
+Definition of a Scenario: A scenario is a question about a culturally grounded ethical/moral situation that can be answered in a yes/no/maybe fashion. The scenario may contain names, but SHOULD NOT contain any indication of other cultural backgrounds such as geography, religion, cultural festivals and any other identification.
+
+---
+
+Country: Bangladesh
+
+Cultural background [Family]:
+The family is central to one’s social life in Bangladesh, forming the basis of individuals’ support networks. The typical household in Bangladesh, especially in villages, often includes several generations. Indeed, if individuals do not live in a village, they will usually still have relatives  (such as their parents)who reside in their home village. People living in urban areas and cities often try to make at least one trip per year to their village – particularly men that work in different locations to provide for their family. The general approach to family ties is communal, and people often act in the best interests of the community rather than based on their individual preferences. Generally, children are expected to consult their parents on major life choices such as their education and marriage. This is slowly changing, with some people making decisions without deliberating with their parents.
+
+Barhi (Home)
+
+The most common family unit in Bangladesh is called the ‘barhi’. This consists of a husband and wife, their unmarried children, and their adult sons with their wives and children. The barhi provides economic stability and a form of social identity. The barhi is both patriarchal and patrilineal. For example, it is common to find married sons living in their parents’ household during the father’s lifetime, and grandparents may also be present depending on the family’s economic and personal situation. While sons often build separate houses for their nuclear families, they remain under their father’s authority.
+
+Gender Roles
+
+Women tend to be in charge of household affairs. Most of their economic and social lives revolve around the home, children and family. Although women are gradually gaining more mobility and roles outside of the domestic sphere, men continue to have greater access to education and paid labour as well as acting as the primary source of authority. The oldest woman may have considerable authority within the household, but ultimately it is the patriarch who makes most decisions.
+
+Dating and Marriage
+
+Many marriages are arranged and will generally take place once parents decide that their child should be married. Parents may contact agencies, a ghatak (matchmaker), relatives and friends to find an appropriate partner for their child. Parents often seek to match their child with someone who is of similar or equal economic status, educational background and religious piousness. However, this is changing, with more Bangladeshis having more autonomy over whom they marry. Although Muslim and Hindu marriage have distinctive religious rituals, there are many common Bengali wedding practices across both. Divorce is a source of social stigma, and thus it is uncommon for people to separate once they are married.
+
+Corresponding WVS survey Question:
+
+Question: For each of the following, indicate how important it is in your life. Would you say it is: Very important, Rather important, Not very important, Not at all important? <Family>
+Answer: Mostly Very Important
+
+Value: Familial relationships and filiality are important
+Situation: A father and his daughter are in an argument. The father wants his daughter to be closer to the city, so as to maintain familial ties. However the daughter wants to move away from the city for a job opportunity, which could help with her career – should she move away?
+
+---
+
+Country: Germany
+
+Cultural background:
+
+Germany is a very secular country and religion tends to be regarded as quite a private matter. Nevertheless, the majority of the population identifies as religious, with Christianity being the traditional and dominant faith. It is estimated that 37.8% of the population identified themselves as not religious, 27.7% identified as Roman Catholic Christians and 25.5% identified as Protestant Christians.1 The remaining 9% of the population identified with some other religion, including other variations of Christianity. Islam is the biggest non-Christian minority faith in Germany (5.1% of the population). This demographic has grown with migration from Muslim majority countries such as Turkey and Bosnia. Despite the majority of Germans indicating that they follow a religious affiliation, the number of those practising is much lower. In a study by the Pew Research Center, only 21% of Germans reported that religion was very important to their lives.2
+
+Religion in Germany
+
+Germany was the birthplace of Martin Luther, who initiated the Protestant Reformation movements of the 16th century in resistance to the creed of the Catholic Church. His movement eventually led to a political divide between Roman Catholicism and Protestantism. This was mediated by a territorial distribution of religious practice. Starting in the mid-16th century, entire towns and municipalities followed the faith of their local ruler’s preference (either Catholic or Protestant). This geographical division of faith is still visible in the religious affiliations of Germans today. The south and west of the country is generally Catholic, whilst most Protestants live in the north and east. One can usually still infer the traditional faith of each German town and city by looking at the religious architecture.
+
+On the other hand, the majority of the non-religious population live in East Germany. This is largely because the region was under communist occupation as the DDR (German
+Republic) from 1945 to 1990. During this era, belief or membership in a religious organisation was considered to be incompatible with loyalty to the Communist Party. As such, the regime actively suppressed and surveilled church activity. For many East Germans, their church remained a place of sanctuary and played a crucial role in providing an independent voice. However, between 1950 and 1989, the religious population was estimated to have shrunk from 98% to 31%.3
+
+Corresponding WVS survey Question:
+
+Question: Here is a list of qualities that children can be encouraged to learn at home. Which, if any, do you consider to be especially important? <Religion>
+Answer: Not at all imporant
+
+Value: Religion is a private matter and not emphasized in daily life
+Situation: Anna and her husband Klaus have been discussing their child's education. Anna, doesn't consider religious education important at all, given her background and the prevailing secularism in the region she's from. However, Klaus, who's from a predominantly conservative place, believes that their child should receive a religious education. Should Klaus' opinion be taken?
+
+---
+Country: 

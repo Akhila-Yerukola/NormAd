@@ -1,0 +1,4 @@
+BASE_URL: "https://culturalatlas.sbs.com.au/"
+use_axis_names: ['Etiquette'] #['Core Concepts','Religion']
+data_dir: ./data
+

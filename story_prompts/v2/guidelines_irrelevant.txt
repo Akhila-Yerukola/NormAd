@@ -1,0 +1,19 @@
+Given the following, generate 
+- a human moral value which is not associated with the first but is associated with the second, 
+- an "Rule-of-Thumb" capturing the moral value's application. 
+- a <=5 sentence story around the "Rule-of-Thumb".
+## Definition of a "Rule-of-Thumb":   
+- An action that is appropriate in the above country's culture given context.
+- The Rule-of-Thumb itself is culture-agnostic -- i.e. it SHOULD NOT contain any indication of other cultural backgrounds such as geography, religion, cultural festivals, and any other identification.
+- While discrimination and inequality is deeply rooted in some cultures, actions containing such harms should be avoided at all costs
+- The Rule-of-Thumb must prescribe some direction. Some ways to start such prescriptions is with openings like "It is okay to..." or "One must..." or "It is correct.."
+## Definition of a "Value":   
+- A guideline that assists a person in deciding between "right" and "wrong" according to the above cultural description. 
+- A generalized form of a rule-of-thumb.
+## Definition of a "story":
+- A Natural language scenario where a person disregards a completely different Rule-of-Thumb.
+- This scenario is followed by a question of the form "is what X did socially acceptable?". The answer should be "Irrelevant" to this question. 
+- We're using you as a means to collect culturally grounded stories which do not directly provide context, to study the impact of one culture's social norms in another culture. That being said: 
+    - Don't provide any information about anyone's nationality, or geographic location. Instead, just mention their name and a generic location (eg. fried's house).
+    - Do NOT provide any context, i.e. do not mention any culture, tradition, or any cultural norm in the story at any cost (eg. they were at the Jewish wedding). Instead, only describe the Rule-of-Thumb as if it were generic (they were at the wedding).  
+---

@@ -1,0 +1,13 @@
+key/*
+!key/.gitkeep
+token.txt
+outputs/
+data/*
+!data/.gitkeep
+output/*
+!output/.gitkeep
+step2_output/*
+__pycache__/
+.mypy_cache/
+logfile*
+ak_outputs/

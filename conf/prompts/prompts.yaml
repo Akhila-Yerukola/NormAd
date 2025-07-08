@@ -1,0 +1,12 @@
+openai_key: ./key/key.txt
+hf_key: ./key/hf_key.txt
+prompts_dir: "story_prompts/v2"
+guidelines_affirm: "guidelines_affirm.txt"
+guidelines_negate: "guidelines_negate.txt"
+guidelines_irrelevant: "guidelines_irrelevant.txt"
+prefix_file: "prefix.txt" # make sure to have a prefix_irrelevant.txt as well
+reminder_file: "reminder.txt"
+output_dir: ./output
+start_index: 0
+end_index: 4
+num_story_samples: 3

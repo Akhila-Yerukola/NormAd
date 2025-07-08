@@ -1,0 +1,20 @@
+path_to_story_file: './output/Etiquette_gpt4_3opt_final.csv'
+save_path: './step2_output/' # save the responses in this directory
+model_name: 'meta-llama/Llama-2-70b-chat-hf' #'gpt-3.5-turbo-0125' #'meta-llama/Llama-2-13b-chat-hf' # 'gpt-3.5-turbo' #'meta-llama/Llama-2-7b-chat-hf' # 'gpt-3.5-turbo' #'meta-llama/Llama-2-13b-chat-hf'  # model name or path
+model_url: 'http://babel-1-23:8087' # for tgi hostings for llama-2 
+max_tokens: 10
+batch_size: 63 # multiple of 3 , as there are 3 options and we can only store so many prefills in ram :3 
+temperature: 0
+no_condition: True
+country_condition: True
+value_condition: True
+rot_condition: True
+full_condition: False
+bgd_condition: False
+to_extract_likelihoods: False
+
+do_test: False # set this true to save as a _test file
+start: 0 # this is filtered regardless of do_test being set,
+end: # to enable smaller inferencing + concat in case large inferences are time consuming
+
+block_user_input: True # To be used for SBATCHING. BE VERY CAREFUL WHEN TURNING THIS OFF

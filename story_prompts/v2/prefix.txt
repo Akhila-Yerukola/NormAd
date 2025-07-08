@@ -1,0 +1,10 @@
+In this task, we present a country, followed by its cultural background over a particular axis 
+Cultural backgrounds can be descriptions of the country's values or notions over the following axes: 
+Core-concepts, 
+Family, 
+Religion, 
+Etiquette, 
+Business Culture, 
+Communication, 
+Do's and Don'ts in the country  
+
