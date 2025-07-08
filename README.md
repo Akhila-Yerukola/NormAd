@@ -1,6 +1,5 @@
 # NormAd
-Code repo for ["NORMAD: A Framework for Measuring the Cultural Adaptability of Large Language Models"](https://arxiv.org/pdf/2404.12464). 
-
+Code repo for ["NORMAD: A Framework for Measuring the Cultural Adaptability of Large Language Models"](https://arxiv.org/pdf/2404.12464).
 # Abstract 
 
 To be effectively and safely deployed to global user populations, large language models (LLMs) may need to adapt outputs to user values and cultures, not just know about them. We introduce NormAd, an evaluation framework to assess LLMs' cultural adaptability, specifically measuring their ability to judge social acceptability across varying levels of cultural norm specificity, from abstract values to explicit social norms. As an instantiation of our framework, we create NormAd-Eti, a benchmark of 2.6k situational descriptions representing social-etiquette related cultural norms from 75 countries. Through comprehensive experiments on NormAd-Eti, we find that LLMs struggle to accurately judge social acceptability across these varying degrees of cultural contexts and show stronger adaptability to English-centric cultures over those from the Global South. Even in the simplest setting where the relevant social norms are provided, the best LLMs' performance (< 82\%) lags behind humans (> 95\%). In settings with abstract values and country information, model performance drops substantially (< 60\%), while human accuracy remains high (> 90\%). Furthermore, we find that models are better at recognizing socially acceptable versus unacceptable situations. Our findings showcase the current pitfalls in socio-cultural reasoning of LLMs which hinder their adaptability for global audiences. 
@@ -215,3 +214,32 @@ This work is licensed under a
 [cc-by]: http://creativecommons.org/licenses/by/4.0/
 [cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
 [cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
+
+# Citation
+If you find the work useful, please consider citing us: 
+```bibtex
+@inproceedings{rao-etal-2025-normad,
+    title = "{N}orm{A}d: A Framework for Measuring the Cultural Adaptability of Large Language Models",
+    author = "Rao, Abhinav Sukumar  and
+      Yerukola, Akhila  and
+      Shah, Vishwa  and
+      Reinecke, Katharina  and
+      Sap, Maarten",
+    editor = "Chiruzzo, Luis  and
+      Ritter, Alan  and
+      Wang, Lu",
+    booktitle = "Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers)",
+    month = apr,
+    year = "2025",
+    address = "Albuquerque, New Mexico",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.naacl-long.120/",
+    doi = "10.18653/v1/2025.naacl-long.120",
+    pages = "2373--2403",
+    ISBN = "979-8-89176-189-6"
+}
+```
+
+```ACL
+Abhinav Sukumar Rao, Akhila Yerukola, Vishwa Shah, Katharina Reinecke, and Maarten Sap. 2025. NormAd: A Framework for Measuring the Cultural Adaptability of Large Language Models. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers), pages 2373–2403, Albuquerque, New Mexico. Association for Computational Linguistics.
+```
