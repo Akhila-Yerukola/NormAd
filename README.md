@@ -220,8 +220,8 @@ If you find the work useful, please consider citing us:
 ```bibtex
 @inproceedings{rao-etal-2025-normad,
     title = "{N}orm{A}d: A Framework for Measuring the Cultural Adaptability of Large Language Models",
-    author = "Rao, Abhinav Sukumar  and
-      Yerukola, Akhila  and
+    author = "Rao, Abhinav Sukumar*  and
+      Yerukola, Akhila*  and
       Shah, Vishwa  and
       Reinecke, Katharina  and
       Sap, Maarten",
@@ -241,5 +241,5 @@ If you find the work useful, please consider citing us:
 ```
 
 ```ACL
-Abhinav Sukumar Rao, Akhila Yerukola, Vishwa Shah, Katharina Reinecke, and Maarten Sap. 2025. NormAd: A Framework for Measuring the Cultural Adaptability of Large Language Models. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers), pages 2373–2403, Albuquerque, New Mexico. Association for Computational Linguistics.
+Abhinav Sukumar Rao*, Akhila Yerukola*, Vishwa Shah, Katharina Reinecke, and Maarten Sap. 2025. NormAd: A Framework for Measuring the Cultural Adaptability of Large Language Models. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers), pages 2373–2403, Albuquerque, New Mexico. Association for Computational Linguistics.
 ```
