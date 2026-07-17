@@ -11,3 +11,6 @@ __pycache__/
 .mypy_cache/
 logfile*
 ak_outputs/
+
+# Protected dataset (added by easy-dataset-share)
+data_and_heval/datasets.zip.enc.extracted/

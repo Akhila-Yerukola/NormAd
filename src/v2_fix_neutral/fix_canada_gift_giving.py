@@ -12,13 +12,15 @@ Post-swap schema:
 import argparse
 import os
 import re
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List, Tuple
 
 import pandas as pd
 from openai import OpenAI
 from tqdm import tqdm
 
 DEFAULT_MODEL = "gpt-4o"
+DEFAULT_WORKERS = 16
 
 CANADA_GIFT_GIVING_BACKGROUND = """### Gift Giving
 - Gifts are usually only given on special occasions and are almost always accompanied with a card.
@@ -67,12 +69,44 @@ def load_api_key(key_path: str) -> str:
         return f.read().strip()
 
 
-def parse_rot_value(response: str) -> tuple[str, str]:
+def parse_rot_value(response: str) -> Tuple[str, str]:
     rot_match = re.search(r"^Rule-of-Thumb:\s*(.+)$", response, flags=re.MULTILINE | re.IGNORECASE)
     value_match = re.search(r"^Value:\s*(.+)$", response, flags=re.MULTILINE | re.IGNORECASE)
     if not rot_match or not value_match:
         raise ValueError(f"Could not parse model response:\n{response}")
     return rot_match.group(1).strip(), value_match.group(1).strip()
+
+
+def _process_one(
+    idx: int,
+    row: pd.Series,
+    client: OpenAI,
+    model: str,
+    temperature: float,
+) -> Tuple[int, Dict]:
+    prompt = TASK_PROMPT.format(
+        story=row["Story"],
+        country=row["Country"],
+        background=row["Background"],
+        other_country=row["Other Country"],
+        other_background=row["Other Background"],
+    )
+    resp = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=400,
+        temperature=temperature,
+    )
+    content = resp.choices[0].message.content or ""
+    new_rot, new_value = parse_rot_value(content)
+    return idx, {
+        "ID": row["ID"],
+        "Other Country": row["Other Country"],
+        "old_Rule-of-Thumb": row["Rule-of-Thumb"],
+        "new_Rule-of-Thumb": new_rot,
+        "old_Value": row["Value"],
+        "new_Value": new_value,
+    }
 
 
 def main() -> None:
@@ -93,7 +127,7 @@ def main() -> None:
     parser.add_argument("--api_key_path", type=str, default=default_key)
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL)
     parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--sleep_every", type=int, default=50)
+    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     parser.add_argument(
         "--ids",
         type=str,
@@ -121,45 +155,23 @@ def main() -> None:
     df.loc[target_mask, "Background"] = CANADA_GIFT_GIVING_BACKGROUND
 
     client = OpenAI(api_key=load_api_key(args.api_key_path))
-    log_rows = []
+    log_rows: List[Dict] = []
+    workers = max(1, args.workers)
 
-    for n, idx in enumerate(tqdm(target_indices, desc="Fixing Canada gift_giving")):
-        if args.sleep_every and n > 0 and n % args.sleep_every == 0:
-            time.sleep(1)
-
-        row = df.loc[idx]
-        prompt = TASK_PROMPT.format(
-            story=row["Story"],
-            country=row["Country"],
-            background=row["Background"],
-            other_country=row["Other Country"],
-            other_background=row["Other Background"],
-        )
-
-        resp = client.chat.completions.create(
-            model=args.model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=400,
-            temperature=args.temperature,
-        )
-        content = resp.choices[0].message.content or ""
-        new_rot, new_value = parse_rot_value(content)
-
-        log_rows.append(
-            {
-                "ID": row["ID"],
-                "Other Country": row["Other Country"],
-                "old_Rule-of-Thumb": row["Rule-of-Thumb"],
-                "new_Rule-of-Thumb": new_rot,
-                "old_Value": row["Value"],
-                "new_Value": new_value,
-            }
-        )
-
-        df.loc[idx, "Rule-of-Thumb"] = new_rot
-        df.loc[idx, "Value"] = new_value
-        if "model" in df.columns:
-            df.loc[idx, "model"] = args.model
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {
+            executor.submit(
+                _process_one, idx, df.loc[idx], client, args.model, args.temperature
+            ): idx
+            for idx in target_indices
+        }
+        for fut in tqdm(as_completed(futures), total=len(futures), desc="Fixing Canada gift_giving"):
+            idx, log_row = fut.result()
+            df.loc[idx, "Rule-of-Thumb"] = log_row["new_Rule-of-Thumb"]
+            df.loc[idx, "Value"] = log_row["new_Value"]
+            if "model" in df.columns:
+                df.loc[idx, "model"] = args.model
+            log_rows.append(log_row)
 
     os.makedirs(os.path.dirname(args.output_path), exist_ok=True)
     df.to_csv(args.output_path, index=False)
@@ -168,6 +180,7 @@ def main() -> None:
     print(f"Input:  {args.input_path}")
     print(f"Output: {args.output_path}")
     print(f"Log:    {args.log_path}")
+    print(f"Workers: {workers}")
     print(f"Rows fixed: {len(target_indices)}")
 
 

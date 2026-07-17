@@ -13,12 +13,15 @@ import argparse
 import os
 import random
 import re
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List, Optional, Tuple
+
 import pandas as pd
 from openai import OpenAI
 from tqdm import tqdm
 
 DEFAULT_MODEL = "gpt-4o"
+DEFAULT_WORKERS = 16
 
 TASK_PROMPT = """Task: You will be given a story, a rule-of-thumb, and an abstracted value.
 
@@ -61,7 +64,7 @@ def load_api_key(key_path: str) -> str:
         return f.read().strip()
 
 
-def parse_rot_value(response: str) -> tuple[str, str]:
+def parse_rot_value(response: str) -> Tuple[str, str]:
     rot_match = re.search(r"^Rule-of-Thumb:\s*(.+)$", response, flags=re.MULTILINE | re.IGNORECASE)
     value_match = re.search(r"^Value:\s*(.+)$", response, flags=re.MULTILINE | re.IGNORECASE)
     if not rot_match or not value_match:
@@ -87,50 +90,60 @@ def build_prompt(row: pd.Series) -> str:
     )
 
 
+def _process_one(
+    idx: int,
+    row: pd.Series,
+    client: OpenAI,
+    model: str,
+    temperature: float,
+) -> Tuple[int, Dict]:
+    prompt = build_prompt(row)
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=500,
+        temperature=temperature,
+    )
+    content = response.choices[0].message.content or ""
+    new_rot, new_value = parse_rot_value(content)
+    return idx, {
+        "ID": row["ID"],
+        "old_Rule-of-Thumb": row["Rule-of-Thumb"],
+        "new_Rule-of-Thumb": new_rot,
+        "old_Value": row["Value"],
+        "new_Value": new_value,
+    }
+
+
 def regenerate_rot_value(
     df: pd.DataFrame,
     client: OpenAI,
     model: str,
     temperature: float,
-    sleep_every: int = 100,
-    sample_size: int = -1,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+    sample_size: int = 0,
+    workers: int = DEFAULT_WORKERS,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     df = df.copy()
     fix_mask = df.apply(should_fix_row, axis=1)
     fix_indices = df.index[fix_mask].tolist()
     if sample_size > 0:
         fix_indices = random.sample(fix_indices, min(sample_size, len(fix_indices)))
 
-    log_rows = []
-    for n, idx in enumerate(tqdm(fix_indices, desc="Regenerating ROT/Value")):
-        if sleep_every and n > 0 and n % sleep_every == 0:
-            time.sleep(1)
+    log_rows: List[Dict] = []
+    workers = max(1, workers)
 
-        row = df.loc[idx]
-        prompt = build_prompt(row)
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=500,
-            temperature=temperature
-        )
-        content = response.choices[0].message.content or ""
-        new_rot, new_value = parse_rot_value(content)
-
-        log_rows.append(
-            {
-                "ID": row["ID"],
-                "old_Rule-of-Thumb": row["Rule-of-Thumb"],
-                "new_Rule-of-Thumb": new_rot,
-                "old_Value": row["Value"],
-                "new_Value": new_value,
-            }
-        )
-
-        df.loc[idx, "Rule-of-Thumb"] = new_rot
-        df.loc[idx, "Value"] = new_value
-        if "model" in df.columns:
-            df.loc[idx, "model"] = model
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {
+            executor.submit(_process_one, idx, df.loc[idx], client, model, temperature): idx
+            for idx in fix_indices
+        }
+        for fut in tqdm(as_completed(futures), total=len(futures), desc="Regenerating ROT/Value"):
+            idx, log_row = fut.result()
+            df.loc[idx, "Rule-of-Thumb"] = log_row["new_Rule-of-Thumb"]
+            df.loc[idx, "Value"] = log_row["new_Value"]
+            if "model" in df.columns:
+                df.loc[idx, "model"] = model
+            log_rows.append(log_row)
 
     return df, pd.DataFrame(log_rows)
 
@@ -160,7 +173,8 @@ def main() -> None:
     parser.add_argument("--api_key_path", type=str, default=default_key)
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL)
     parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--sample_size", type=int, default=25)
+    parser.add_argument("--sample_size", type=int, default=0)
+    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     parser.add_argument("--seed", type=int, default=None, help="Random seed for sampling.")
     parser.add_argument(
         "--save_only_sample",
@@ -186,11 +200,11 @@ def main() -> None:
         model=args.model,
         temperature=args.temperature,
         sample_size=args.sample_size,
+        workers=args.workers,
     )
 
     os.makedirs(os.path.dirname(args.output_path), exist_ok=True)
     if args.save_only_sample:
-        # log_df contains only edited IDs; IDs should be unique in this dataset.
         df_out[df_out["ID"].isin(log_df["ID"])].to_csv(args.output_path, index=False)
     else:
         df_out.to_csv(args.output_path, index=False)
@@ -200,6 +214,7 @@ def main() -> None:
     print(f"Output: {args.output_path}")
     print(f"Log:    {args.log_path}")
     print(f"Model:  {args.model}")
+    print(f"Workers: {args.workers}")
     print(f"Regenerated ROT/Value for {len(log_df)} rows.")
 
 

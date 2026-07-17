@@ -15,13 +15,15 @@ import argparse
 import os
 import random
 import re
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List, Tuple
 
 import pandas as pd
 from openai import OpenAI
 from tqdm import tqdm
 
 DEFAULT_MODEL = "gpt-4o"
+DEFAULT_WORKERS = 16
 
 TASK_PROMPT = """Task: Write an explanation for why the gold label for this example is Neutral (neither Yes nor No).
 
@@ -109,43 +111,52 @@ def get_regen_indices(df: pd.DataFrame, row_filter: str, sample_size: int = 0) -
     return regen_indices
 
 
+def _process_one(
+    idx: int,
+    row: pd.Series,
+    client: OpenAI,
+    model: str,
+    temperature: float,
+) -> Tuple[int, Dict]:
+    prompt = build_prompt(row)
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=300,
+        temperature=temperature,
+    )
+    content = response.choices[0].message.content or ""
+    new_explanation = parse_explanation(content)
+    return idx, {
+        "ID": row["ID"],
+        "old_Explanation": row["Explanation"],
+        "new_Explanation": new_explanation,
+    }
+
+
 def regenerate_explanations(
     df: pd.DataFrame,
     client: OpenAI,
     model: str,
     temperature: float,
     regen_indices: list,
-    sleep_every: int = 100,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+    workers: int = DEFAULT_WORKERS,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     df = df.copy()
+    log_rows: List[Dict] = []
+    workers = max(1, workers)
 
-    log_rows = []
-    for n, idx in enumerate(tqdm(regen_indices, desc="Regenerating explanations")):
-        if sleep_every and n > 0 and n % sleep_every == 0:
-            time.sleep(1)
-
-        row = df.loc[idx]
-        prompt = build_prompt(row)
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
-            temperature=temperature
-        )
-        content = response.choices[0].message.content or ""
-        new_explanation = parse_explanation(content)
-
-        log_rows.append(
-            {
-                "ID": row["ID"],
-                "old_Explanation": row["Explanation"],
-                "new_Explanation": new_explanation,
-            }
-        )
-
-        df.loc[idx, "Explanation"] = new_explanation
-        if "model" in df.columns:
-            df.loc[idx, "model"] = model
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = {
+            executor.submit(_process_one, idx, df.loc[idx], client, model, temperature): idx
+            for idx in regen_indices
+        }
+        for fut in tqdm(as_completed(futures), total=len(futures), desc="Regenerating explanations"):
+            idx, log_row = fut.result()
+            df.loc[idx, "Explanation"] = log_row["new_Explanation"]
+            if "model" in df.columns:
+                df.loc[idx, "model"] = model
+            log_rows.append(log_row)
 
     return df, pd.DataFrame(log_rows)
 
@@ -175,6 +186,7 @@ def main() -> None:
     parser.add_argument("--api_key_path", type=str, default=default_key)
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL)
     parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     parser.add_argument(
         "--save_only_sample",
         action="store_true",
@@ -183,7 +195,7 @@ def main() -> None:
     parser.add_argument(
         "--sample_size",
         type=int,
-        default=25,
+        default=0,
         help="Sample this many rows after filtering (0 = all matching rows).",
     )
     parser.add_argument("--seed", type=int, default=None, help="Random seed for sampling.")
@@ -212,6 +224,7 @@ def main() -> None:
         model=args.model,
         temperature=args.temperature,
         regen_indices=regen_indices,
+        workers=args.workers,
     )
 
     os.makedirs(os.path.dirname(args.output_path), exist_ok=True)
@@ -225,6 +238,7 @@ def main() -> None:
     print(f"Output: {args.output_path}")
     print(f"Log:    {args.log_path}")
     print(f"Model:  {args.model}")
+    print(f"Workers: {args.workers}")
     print(f"Filter: {args.filter}")
     print(f"Eligible rows: {eligible}")
     print(f"Regenerated explanations for {len(log_df)} rows.")
