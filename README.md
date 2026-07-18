@@ -31,6 +31,61 @@ Our NormAd-Eti construction pipeline consists of 4 parts:
 
 ![Figure describing the process of dataset construction](assets/generation_pipeline.png)
 
+## NormAd-Eti v2 (Neutral Alignment Fix)
+
+v1 published **Country / Background** for *neutral* examples from the **story** culture (C1), while **Value / Rule-of-Thumb** came from a different culture (C2). That made neutrals look inconsistent: the story matched Country/Background, but ROT/Value did not.
+
+**v2 goal:** published context should be C2 throughout, with the story remaining from C1 (so Country, Background, Value, and ROT are aligned with each other and *unaligned* with the story).
+
+### Post-swap schema (neutrals)
+
+| Field | Culture |
+|---|---|
+| `Country`, `Background`, `Value`, `Rule-of-Thumb` | **C2** (context / ROT culture) |
+| `Story` | **C1** (story culture) |
+
+Yes/No examples are unchanged.
+
+### Pipeline (`src/v2_fix_neutral/`)
+
+Code and orchestrator live in `src/v2_fix_neutral/`. End-to-end:
+
+```bash
+# full run
+python src/v2_fix_neutral/build_final_dataset.py
+# or
+bash src/v2_fix_neutral/run.sh
+
+# smoke test
+bash src/v2_fix_neutral/run.sh --sample_size 25 --workers 16
+```
+
+Steps (in order):
+
+1. **Swap** — For all neutrals, swap `Country`/`Background` with `Other Country`/`Other Background` so published context is C2 (`swap_neutral_country_background.py`).
+2. **ROT/Value regen** — For neutrals where `entail_pred_temp0.0 == 0.0` (ROT entailed the *pre-swap* story-side background; 158 candidates), regenerate `Rule-of-Thumb` and `Value` from the post-swap (C2) background (`regenerate_rot_value.py`).
+3. **Canada gift-giving fix** — For ~10 `canada` + gift-giving neutrals, overwrite Background with a corrected Canada gift-giving text and regenerate ROT/Value (`fix_canada_gift_giving.py`).
+4. **Story ↔ Background validation** — Ask whether C2 `Background` alone determines Yes/No for the story. If so, reject and regenerate `Story` (+ explanation) from C1 (`Other Background`), with retries (`validate_story_vs_background.py`). Rows that still fail after retries are dropped.
+5. **Explanation regen** — Regenerate explanations for all remaining neutrals under the post-swap schema (`regenerate_explanations.py`).
+
+### v2 dataset statistics
+
+| | v1 (original) | v2 (neutral-fixed) |
+|---|---:|---:|
+| Total examples | 2,633 | **2,615** |
+| Yes | 943 | 943 |
+| No | 875 | 875 |
+| Neutral | 815 | **797** |
+| Countries | 75 | 75 |
+
+Relative to post-swap neutrals in the released v2 file:
+
+- **219** stories regenerated (failed C2-background check, then recovered)
+- **18** neutrals dropped (could not recover a story that stays Neutral w.r.t. C2 Background)
+- **797** explanations regenerated
+- **10** Canada gift-giving backgrounds rewritten
+- Story validation reject rate on all neutrals: **237 / 815 (~29%)**; cumulative recovery after retries: **219 / 237 (~92%)**
+
 # Directory Structure
 ```
 ├── .gitattributes
@@ -136,6 +191,15 @@ Our NormAd-Eti construction pipeline consists of 4 parts:
 │   │   ├── run_model_validation_stage2_fix_rot.py
 │   │   ├── sbatch_irrel.sh
 │   │   ├── utils.py
+│   ├── v2_fix_neutral          # NormAd-Eti v2 neutral alignment pipeline
+│   │   ├── build_final_dataset.py
+│   │   ├── run.sh
+│   │   ├── swap_neutral_country_background.py
+│   │   ├── regenerate_rot_value.py
+│   │   ├── fix_canada_gift_giving.py
+│   │   ├── validate_story_vs_background.py
+│   │   ├── regenerate_explanations.py
+│   │   └── ...
 │   ├── webscrape
 │   │   ├── __init__.py
 │   │   ├── webscrape.py
