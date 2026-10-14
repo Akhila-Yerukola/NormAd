@@ -6,10 +6,9 @@ To be effectively and safely deployed to global user populations, large language
 
 ## NEW: NormAd-Eti v2 (Neutral Alignment Fix)
 
-We have published a new version of NormAd-Eti that involved fixing some neutral labels. Published **Country / Background** for *neutral* examples from the **story** culture (C1), while **Value / Rule-of-Thumb** came from a different culture (C2). That made neutrals look inconsistent: the story matched Country/Background, but ROT/Value did not.
+We have published a new version of NormAd-Eti that involved fixing some neutral labels. The published Country / Background for neutral examples from the culture described by the situation (which we'll term as C1), while Value / Rule-of-Thumb came from a different culture (which we'll term as C2). That made neutral examples look inconsistent: the situation matched Country/Background, but ROT/Value did not. Ideally, we would want the situation to be from a different country (C1) from each datapoint's country, value, and rule of thumb (C2). 
 
 **v2 goal:** published context should be from Country C2 throughout, with the story remaining from C1 (so Country, Background, Value, and ROT are aligned with each other and *unaligned* with the story).
-
 
 ### Pipeline (`src/v2_fix_neutral/`)
 
@@ -27,10 +26,10 @@ bash src/v2_fix_neutral/run.sh --sample_size 25 --workers 16
 
 Steps (in order):
 
-1. **Swap** — For all neutrals, swap `Country`/`Background` with `Other Country`/`Other Background` so published context is C2 (`swap_neutral_country_background.py`).
-2. **ROT/Value regen** — For neutrals where `entail_pred_temp0.0 == 0.0` (ROT entailed the *pre-swap* story-side background), regenerate `Rule-of-Thumb` and `Value` from the post-swap (C2) background (`regenerate_rot_value.py`).
-3. **Canada gift-giving fix** — For ~10 `canada` + gift-giving neutrals, overwrite Background with a corrected Canada gift-giving text and regenerate ROT/Value (`fix_canada_gift_giving.py`).
-4. **Story ↔ Background validation** — Ask whether C2 `Background` alone determines Yes/No for the story. If so, reject and regenerate `Story` (+ explanation) from C1 (`Other Background`), with retries (`validate_story_vs_background.py`). Rows that still fail after retries are dropped.
+1. We swap Country/Background with the ones used for Value and ROT (C2). (`swap_neutral_country_background.py`).
+2. **ROT/Value regen** — However, this didn't fix everything; even after this, the neutral labels failed entailment checks (as described in section 4.2 of the paper). Hence, we regenerate Rule-of-Thumb and Value and explanations from the post-swap (C2) background. (`regenerate_rot_value.py`).
+3. **Story ↔ Background validation** — We added an additional entailment check: ask whether C2 Background alone determines Yes/No for the story. If so, reject and regenerate Story (+ explanation) from C1 (Other Background), with retries. Rows that still fail after retries are dropped - which is why we see 18 less samples. (`validate_story_vs_background.py`).
+4. **Canada gift-giving fix** — While doing this, we also noticed that ~10 canada + gift-giving neutral labels don't have the correct cultural background due to an error with our web scraper. Hence, we overwrote Background with a corrected Canada gift-giving text and regenerated ROT/Value and explanations. (`fix_canada_gift_giving.py`).
 5. **Explanation regen** — Regenerate explanations for all remaining neutrals under the post-swap schema (`regenerate_explanations.py`).
 
 ### v2 dataset statistics
